@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:CRUD_LOGIN_MAUI"
+             x:Class="CRUD_LOGIN_MAUI.AdminPage"
+             Title="Administrador">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15" BackgroundColor="#E3F2FD">
+
+            <!-- Título -->
+            <Label Text="Panel de Control - Administrador"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   TextColor="#0D47A1"
+                   HorizontalOptions="Center"/>
+
+            <!-- Entradas de usuario -->
+            <Entry x:Name="txtUsuario" Placeholder="👤 Usuario"/>
+            <Entry x:Name="txtPassword" Placeholder="🔑 Contraseña" IsPassword="True"/>
+
+            <!-- Picker de roles -->
+            <Picker x:Name="pickerRol" Title="Seleccionar Rol">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Admin</x:String>
+                        <x:String>Supervisor</x:String>
+                        <x:String>Vendedor</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+
+            <!-- Buscador -->
+            <Entry x:Name="txtBuscar"
+                   Placeholder="🔎 Buscar por ID, Usuario o Rol..."
+                   TextChanged="OnSearchChanged"
+                   BackgroundColor="White"/>
+
+            <!-- Botones CRUD -->
+            <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                <Button Grid.Row="0" Grid.Column="0" Text="➕ Insertar" BackgroundColor="Green" TextColor="White" Clicked="OnInsertClicked"/>
+                <Button Grid.Row="0" Grid.Column="1" Text="🔄 Actualizar" BackgroundColor="DodgerBlue" TextColor="White" Clicked="OnUpdateClicked"/>
+                <Button Grid.Row="0" Grid.Column="2" Text="🗑️ Eliminar" BackgroundColor="Red" TextColor="White" Clicked="OnDeleteClicked"/>
+                <Button Grid.Row="1" Grid.Column="0" Text="🔍 Consultar" BackgroundColor="Orange" TextColor="White" Clicked="OnConsultClicked"/>
+                <Button Grid.Row="1" Grid.Column="1" Text="✅ Validar" BackgroundColor="Purple" TextColor="White" Clicked="OnValidateClicked"/>
+                <Button Grid.Row="1" Grid.Column="2" Text="🧹 Limpiar" BackgroundColor="Gray" TextColor="White" Clicked="OnClearClicked"/>
+            </Grid>
+
+            <!-- Mensajes -->
+            <Label x:Name="lblMensaje" TextColor="Red" FontAttributes="Bold" HorizontalOptions="Center"/>
+
+            <!-- Lista de usuarios con compiled bindings -->
+            <CollectionView x:Name="listaUsuarios"
+                            SelectionMode="Single"
+                            SelectionChanged="OnUsuarioSelected"
+                            HeightRequest="250">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="local:UsuarioItem">
+                        <Grid Padding="10" ColumnDefinitions="40, *, *">
+                            <Label Grid.Column="0" Text="{Binding Id}" FontAttributes="Bold" TextColor="Blue"/>
+                            <Label Grid.Column="1" Text="{Binding Usuario}" FontAttributes="Bold"/>
+                            <Label Grid.Column="2" Text="{Binding Rol}" TextColor="Gray"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Button Text="⚙️ Roles"
+                    BackgroundColor="Teal"
+                    TextColor="White"
+                    Clicked="OnRolesClicked"/>
+
+
+            <!-- Botón logout -->
+            <Button Text="Cerrar sesión"
+                    BackgroundColor="DarkRed"
+                    TextColor="White"
+                    Margin="0,20"
+                    Clicked="OnLogoutClicked"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

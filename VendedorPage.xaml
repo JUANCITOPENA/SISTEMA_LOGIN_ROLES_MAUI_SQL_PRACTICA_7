@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CRUD_LOGIN_MAUI.VendedorPage"
+             Title="VendedorPage">
+    <VerticalStackLayout Padding="30" Spacing="20" BackgroundColor="#E8F5E9">
+        <Label Text="Bienvenido Vendedor"
+               FontSize="24"
+               FontAttributes="Bold"
+               TextColor="#1B5E20"
+               HorizontalOptions="Center"
+               Margin="10"/>
+
+        <!-- Logo -->
+        <Image Source="https://cdn-icons-png.flaticon.com/512/2316/2316167.png"
+                 HeightRequest="175"
+                 HorizontalOptions="Center" />
+
+        <Label Text="Ventana: Modulo de ventas"
+               FontSize="18"
+               TextColor="Black"
+               HorizontalOptions="Center"
+                Margin="10"/>
+
+        <Button Text="Cerrar Sesion" 
+                Clicked="OnLogoutClicked" 
+                BackgroundColor="#D32F2F" 
+                TextColor="White" 
+                HorizontalOptions="Center" 
+                Margin="0,20,0,0" />
+    </VerticalStackLayout>
+</ContentPage>

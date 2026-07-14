@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:CRUD_LOGIN_MAUI"
+             x:Class="CRUD_LOGIN_MAUI.RolesPage"
+             Title="Gestión de Roles">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15" BackgroundColor="#FFFDE7">
+
+            <Label Text="Panel de Control - Roles"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   TextColor="#BF360C"
+                   HorizontalOptions="Center"/>
+
+            <!-- Campo para nombre del rol -->
+            <Entry x:Name="txtRol" Placeholder="🛡️ Nombre del Rol"/>
+
+            <!-- Buscador -->
+            <Entry x:Name="txtBuscar"
+                   Placeholder="🔎 Buscar por ID o Nombre..."
+                   TextChanged="OnSearchChanged"
+                   BackgroundColor="White"/>
+
+            <!-- Botones CRUD -->
+            <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                <Button Grid.Row="0" Grid.Column="0" Text="➕ Insertar" BackgroundColor="Green" TextColor="White" Clicked="OnInsertClicked"/>
+                <Button Grid.Row="0" Grid.Column="1" Text="🔄 Actualizar" BackgroundColor="DodgerBlue" TextColor="White" Clicked="OnUpdateClicked"/>
+                <Button Grid.Row="0" Grid.Column="2" Text="🗑️ Eliminar" BackgroundColor="Red" TextColor="White" Clicked="OnDeleteClicked"/>
+                <Button Grid.Row="1" Grid.Column="0" Text="🔍 Consultar" BackgroundColor="Orange" TextColor="White" Clicked="OnConsultClicked"/>
+                <Button Grid.Row="1" Grid.Column="2" Text="🧹 Limpiar" BackgroundColor="Gray" TextColor="White" Clicked="OnClearClicked"/>
+            </Grid>
+
+            <!-- Lista de roles -->
+            <CollectionView x:Name="listaRoles"
+                            SelectionMode="Single"
+                            SelectionChanged="OnRolSelected"
+                            HeightRequest="250">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="local:RolItem">
+                        <Grid Padding="10" ColumnDefinitions="40, *">
+                            <Label Grid.Column="0" Text="{Binding Id}" FontAttributes="Bold" TextColor="Blue"/>
+                            <Label Grid.Column="1" Text="{Binding NombreRol}" FontAttributes="Bold"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Botón logout -->
+            <Button Text="Cerrar sesión"
+                    BackgroundColor="DarkRed"
+                    TextColor="White"
+                    Margin="0,20"
+                    Clicked="OnLogoutClicked"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
