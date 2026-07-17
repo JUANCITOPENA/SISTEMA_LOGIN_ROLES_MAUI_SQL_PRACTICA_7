@@ -1,15 +1,153 @@
-# Manual Paso a Paso: Proyecto CRUD_LOGIN_MAUI (Completo y Documentado)
+# 🔐 CRUD_LOGIN_MAUI — Sistema de Autenticación y Roles con .NET MAUI + SQL Server
 
-Este manual documenta de manera exhaustiva la estructura, la base de datos, las vistas (XAML) y la lógica de código (C#) del proyecto `CRUD_LOGIN_MAUI`. Es una guía paso a paso para construir o entender este sistema de autenticación y roles desarrollado en **.NET MAUI** con conexión directa a **SQL Server**.
+> 📘 **Manual paso a paso, completo y documentado**
+> Guía exhaustiva para construir (o entender) un sistema de **login con roles** desarrollado en **.NET MAUI**, con conexión directa a **SQL Server** y contraseñas protegidas mediante **hashing SHA2_256**.
+
+---
+
+## 📑 Tabla de Contenidos
+
+| # | Paso | Descripción |
+|---|------|-------------|
+| 🗄️ | [Paso 1](#️-paso-1-configurar-la-base-de-datos-sql-server) | Configurar la Base de Datos (SQL Server) |
+| 🚀 | [Paso 2](#-paso-2-enrutamiento-principal-appshell) | Enrutamiento Principal (`AppShell`) |
+| 🔒 | [Paso 3](#-paso-3-pantalla-de-login-mainpage) | Pantalla de Login (`MainPage`) |
+| 🛠️ | [Paso 4](#️-paso-4-panel-de-control-adminpage) | Panel de Control (`AdminPage`) |
+| 🎭 | [Paso 5](#-paso-5-vistas-roles) | Vista de Gestión de Roles |
+| 👔 | [Paso 6](#-paso-6-vistas-limitadas-supervisor) | Vista Restringida — Supervisor |
+| 🛍️ | [Paso 7](#️-paso-7-vistas-limitadas-vendedor) | Vista Restringida — Vendedor |
+| ✅ | [Cierre](#-conclusión) | Conclusión y buenas prácticas |
+
+---
+
+## 🧭 Visión General del Proyecto
+
+Este proyecto es un **sistema educativo de autenticación con roles** (Admin, Supervisor, Vendedor) que demuestra un flujo completo:
+
+- 🔑 **Login seguro** validado contra SQL Server con contraseñas encriptadas (nunca en texto plano).
+- 🧩 **Navegación basada en Shell**, redirigiendo dinámicamente según el rol del usuario autenticado.
+- 🗂️ **CRUD completo** de usuarios y roles desde la app (Insertar, Actualizar, Eliminar, Consultar, Validar).
+- 🎨 **Vistas diferenciadas por rol**, donde solo el Administrador tiene permisos de escritura sobre la base de datos.
+
+```
+┌─────────────┐      valida credenciales       ┌───────────────────┐
+│  MainPage   │ ─────────────────────────────► │   SQL Server DB    │
+│  (Login)    │ ◄───────────────────────────── │ LoginRolesDB_cif   │
+└──────┬──────┘        devuelve NombreRol       └───────────────────┘
+       │
+       │ Shell.Current.GoToAsync($"{role}Page")
+       ▼
+┌─────────────┬─────────────────┬─────────────────┐
+│  AdminPage  │ SupervisorPage  │  VendedorPage    │
+│ (CRUD total)│ (solo lectura)  │  (solo lectura)  │
+└─────────────┴─────────────────┴─────────────────┘
+```
+
+### 📂 Estructura del Proyecto (.NET MAUI)
+
+A diferencia del proyecto por defecto que genera Visual Studio, nuestra estructura está purificada y orientada exclusivamente a las pantallas de los roles y la conexión a datos.
+
+```text
+📁 CRUD_LOGIN_MAUI
+ ├── 📁 Dependencies            # 📦 Paquetes (Microsoft.Data.SqlClient)
+ ├── 📁 Platforms               # 🤖 Código específico por plataforma (Android, iOS, Windows)
+ ├── 📁 Resources               # 🎨 Recursos visuales (AppIcon, Fonts, Images, Styles)
+ │
+ ├── 📄 App.xaml                # 🖌️ Diccionarios de recursos y estilos globales
+ ├── 📄 App.xaml.cs             # 🚀 Punto de entrada (Llama al AppShell)
+ ├── 📄 AppShell.xaml           # 🗺️ Enrutador visual (Gestor de las rutas base)
+ ├── 📄 AppShell.xaml.cs        # 🔗 Registro de rutas ocultas mediante C#
+ │
+ ├── 📄 MainPage.xaml           # 🚪 Pantalla principal de Acceso (Login)
+ ├── 📄 AdminPage.xaml          # 👑 Panel del Administrador (CRUD Usuarios)
+ ├── 📄 RolesPage.xaml          # 🎭 Gestión del catálogo de roles (CRUD Roles)
+ ├── 📄 SupervisorPage.xaml     # 👔 Vista limitada a reportes y supervisión
+ ├── 📄 VendedorPage.xaml       # 🛍️ Vista operativa para módulo de ventas
+ │
+ ├── 📄 MauiProgram.cs          # ⚙️ Inyector de dependencias y fuentes de MAUI
+ └── 📄 CRUD_LOGIN_MAUI.csproj  # 🏗️ Archivo maestro (net9.0 y reglas de nulos)
+```
+
+### 🧰 Requisitos previos
+
+| Herramienta | Uso |
+|---|---|
+| 🖥️ Visual Studio 2022 (17.8+) con carga de trabajo **.NET Multi-platform App UI development** | Crear y ejecutar el proyecto MAUI |
+| 🗃️ SQL Server (Express, Developer o Standard) | Alojar la base de datos `LoginRolesDB_cif` |
+| 🧩 SQL Server Management Studio (SSMS) | Ejecutar scripts y administrar la base de datos |
+| 📦 Paquete NuGet `Microsoft.Data.SqlClient` | Conectar la app MAUI con SQL Server |
 
 ---
 
 ## 🗄️ PASO 1: Configurar la Base de Datos (SQL Server)
 
-Antes de programar en .NET MAUI, necesitamos la base de datos que almacenará a los usuarios, sus contraseñas encriptadas y sus roles. 
+Antes de programar en .NET MAUI, necesitamos la base de datos que almacenará a los usuarios, sus contraseñas encriptadas y sus roles. Además, como la app se conectará **desde un dispositivo/emulador** (no siempre desde la misma máquina), debemos habilitar el **acceso remoto** al motor de SQL Server.
 
-### ¿Cómo crear el script SQL?
-Abre **SQL Server Management Studio (SSMS)**. Ve al menú superior y selecciona **Nueva consulta** (o presiona `Ctrl+N`). Copia el siguiente código, pégalo en la ventana en blanco y haz clic en **Ejecutar** (o presiona `F5`). Esto creará automáticamente la base de datos `LoginRolesDB_cif`, las tablas necesarias, y poblará la base de datos con roles y usuarios de prueba.
+### 🪜 Pasos para preparar todo el entorno de base de datos
+
+**1️⃣ Instalar y abrir SSMS**
+1. Descarga e instala **SQL Server Management Studio (SSMS)** desde el sitio oficial de Microsoft (si aún no lo tienes).
+2. Ábrelo y en la ventana **Connect to Server**, ingresa el nombre de tu instancia (por ejemplo `localhost` o `NOMBRE-PC\SQLEXPRESS`).
+3. Selecciona el método de autenticación:
+   - 🪟 **Windows Authentication** (recomendado para desarrollo local), o
+   - 🔑 **SQL Server Authentication** (necesario si luego usarás un usuario como `JUANCITO` desde la app).
+4. Haz clic en **Connect**.
+
+**2️⃣ Habilitar el modo de autenticación mixta (necesario para el usuario `JUANCITO` de la cadena de conexión)**
+1. En el **Object Explorer**, clic derecho sobre el nombre del servidor → **Properties**.
+2. Ve a la pestaña **Security**.
+3. Selecciona **SQL Server and Windows Authentication mode**.
+4. Clic en **OK**.
+5. Clic derecho sobre el servidor → **Restart** (o reinicia el servicio desde *SQL Server Configuration Manager*) para aplicar el cambio.
+
+**3️⃣ Crear el login SQL que usará la app (ej. `JUANCITO`)**
+1. En **Object Explorer**, expande **Security → Logins**.
+2. Clic derecho → **New Login...**
+3. En **Login name**, escribe `JUANCITO`.
+4. Selecciona **SQL Server authentication** y define la contraseña (por ejemplo `123456`, la misma que aparece en la cadena de conexión del código).
+5. Desmarca **Enforce password expiration** (para evitar bloqueos en desarrollo).
+6. En la pestaña **Server Roles**, marca `sysadmin` (solo para entorno de práctica) o, para algo más restringido, asigna permisos `db_owner` sobre `LoginRolesDB_cif` una vez creada.
+7. Clic en **OK**.
+
+**4️⃣ Crear una nueva consulta y ejecutar el script**
+1. Clic en **New Query** (o `Ctrl+N`) en la barra de herramientas de SSMS.
+2. Copia **todo** el script SQL de la sección de abajo.
+3. Pégalo dentro de la ventana de consulta.
+4. Ejecuta con el botón **Execute** o presionando `F5`.
+5. Verifica en el panel de resultados que las consultas `SELECT * FROM Usuarios` y `SELECT * FROM Roles` devuelvan datos.
+
+**5️⃣ Habilitar el Acceso Remoto (Remote Connections)**
+1. Clic derecho sobre el servidor en Object Explorer → **Properties**.
+2. Ve a la pestaña **Connections**.
+3. Verifica que la casilla **Allow remote connections to this server** esté marcada. ✅
+4. Clic en **OK**.
+
+**6️⃣ Habilitar el protocolo TCP/IP y fijar el puerto 1433**
+1. Abre **SQL Server Configuration Manager** (búscalo en el menú Inicio de Windows).
+2. Ve a **SQL Server Network Configuration → Protocols for [TU_INSTANCIA]**.
+3. Haz doble clic en **TCP/IP** y en la pestaña **Protocol**, cambia **Enabled** a `Yes`.
+4. Ve a la pestaña **IP Addresses**, baja hasta la sección **IPAll**.
+5. En **TCP Port**, escribe `1433` (déjalo vacío en *TCP Dynamic Ports*).
+6. Clic en **Apply** y luego **OK**.
+7. Reinicia el servicio: en el panel izquierdo ve a **SQL Server Services**, clic derecho sobre tu instancia (ej. `SQL Server (MSSQLSERVER)`) → **Restart**.
+
+**7️⃣ Abrir el puerto 1433 en el Firewall de Windows**
+1. Abre **Firewall de Windows Defender con seguridad avanzada**.
+2. Clic en **Reglas de entrada (Inbound Rules)** → **Nueva regla...**
+3. Selecciona **Puerto** → **Siguiente**.
+4. Elige **TCP** y especifica el puerto **1433** → **Siguiente**.
+5. Selecciona **Permitir la conexión** → **Siguiente**.
+6. Marca los perfiles (Dominio, Privado, Público según tu red) → **Siguiente**.
+7. Asigna un nombre descriptivo, por ejemplo `SQL Server 1433` → **Finalizar**.
+
+**8️⃣ Verificar la IP del servidor para la cadena de conexión**
+1. En una terminal de Windows (`cmd`), ejecuta `ipconfig` y copia la **IPv4 Address** del equipo donde corre SQL Server (en este manual se usa `10.0.0.15` como ejemplo).
+2. Asegúrate de que el emulador/dispositivo MAUI esté en la **misma red** para poder alcanzar esa IP.
+3. Esa IP es la que se usará en `Server=10.0.0.15,1433;...` dentro de las cadenas de conexión de C#.
+
+> ⚠️ **Nota de seguridad:** `SHA2_256` es un algoritmo de *hashing* unidireccional (no reversible), ideal para fines educativos. En producción se recomienda además aplicar **salting** (sal criptográfica) para mitigar ataques de tablas *rainbow*.
+
+### 📜 Script completo de creación de la base de datos
 
 ```sql
 /********************************************************************************************
@@ -108,14 +246,97 @@ FROM Usuarios
 WHERE Usuario = 'AdminUser';
 ```
 
+### 📊 Modelo Entidad-Relación (simplificado)
+
+```
+┌─────────────────────┐          ┌─────────────────────────┐
+│        Roles        │          │        Usuarios         │
+├─────────────────────┤          ├─────────────────────────┤
+│ 🔑 Id        INT     │ 1     N │ 🔑 Id            INT     │
+│    NombreRol VARCHAR │◄─────────│    Usuario       VARCHAR│
+└─────────────────────┘          │    Password      VARCHAR│ (hash SHA2_256)
+                                  │ 🔗 IdRol         INT     │ (FK → Roles.Id)
+                                  └─────────────────────────┘
+```
+
+| 👤 Usuario | 🔑 Contraseña (texto plano, solo demo) | 🎭 Rol |
+|---|---|---|
+| AdminUser | admin123 | Admin |
+| SuperUser | super123 | Supervisor |
+| SalesUser | sales123 | Vendedor |
+
+**9️⃣ Probar la conexión remota desde otra máquina (opcional pero recomendado)**
+1. Desde otra PC en la misma red, abre SSMS.
+2. En **Connect to Server**, escribe `10.0.0.15,1433` (IP,puerto) como nombre de servidor.
+3. Autentícate con el login `JUANCITO` y su contraseña.
+4. Si conecta correctamente, tu configuración de red/firewall/TCP-IP quedó lista para que la app MAUI también se conecte. ✅
+
 ---
 
 ## 🚀 PASO 2: Enrutamiento Principal (`AppShell`)
 
-Una vez que tienes el proyecto MAUI creado, el primer paso es configurar el **AppShell**. Este archivo actúa como el "director de orquesta", definiendo las rutas (URL internas) para navegar entre pantallas de manera segura.
+Una vez que tienes el proyecto MAUI creado, el primer paso es configurar el **AppShell**. Este archivo actúa como el 🎼 "director de orquesta", definiendo las rutas (URLs internas) para navegar entre pantallas de manera segura.
 
-### ¿Cómo configurar la vista `AppShell.xaml`?
-En el **Explorador de Soluciones** de Visual Studio, ubica y haz doble clic sobre el archivo `AppShell.xaml` (este archivo ya viene por defecto al crear un proyecto MAUI). Borra todo su contenido y pega exactamente el siguiente código para deshabilitar el menú lateral e incluir las rutas:
+> ℹ️ `AppShell.xaml` y `AppShell.xaml.cs` **ya vienen incluidos automáticamente** al crear un proyecto nuevo de .NET MAUI (plantilla "App"), por lo que aquí no se crean desde cero, sino que se **editan**.
+
+### 🪜 Pasos para crear el proyecto y ubicar `AppShell.xaml`
+
+1. Abre **Visual Studio 2022**.
+2. Clic en **Create a new project**.
+3. Busca la plantilla **.NET MAUI App** y selecciónala → **Next**.
+4. Nombra el proyecto exactamente `CRUD_LOGIN_MAUI` (para que coincida con el `namespace` usado en todo el código) → elige la ubicación → **Next**.
+5. Selecciona el **Framework** (.NET 8.0 o superior) → **Create**.
+6. Espera a que Visual Studio genere la plantilla base.
+7. En el **Solution Explorer**, ubica los archivos base: `App.xaml` (y su `App.xaml.cs`) y `AppShell.xaml` (y su `AppShell.xaml.cs`).
+8. Configúralos usando los siguientes bloques de código.
+
+### 🛠️ Inicialización Base (`App.xaml` y `App.xaml.cs`)
+
+Estos archivos inician la aplicación y cargan el `AppShell`. 
+
+**`App.xaml`** (Por defecto, carga los estilos y colores globales):
+```xml
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:CRUD_LOGIN_MAUI"
+             x:Class="CRUD_LOGIN_MAUI.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
+```
+
+**`App.xaml.cs`** (Lógica de inicialización):
+> ⚠️ **Importante:** Al tener desactivadas las advertencias de nulos globales, removemos el signo `?` de `IActivationState` que viene por defecto.
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+
+namespace CRUD_LOGIN_MAUI;
+
+public partial class App : Application
+{
+	public App()
+	{
+		InitializeComponent();
+	}
+
+	protected override Window CreateWindow(IActivationState activationState)
+	{
+		return new Window(new AppShell());
+	}
+}
+```
+
+### 📄 ¿Cómo editar el archivo `AppShell.xaml`?
+
+En tu proyecto, abre el archivo `AppShell.xaml` y reemplaza su contenido por este. Hemos desactivado el menú lateral (`FlyoutBehavior="Disabled"`) para forzar que la navegación ocurra **solo** a través de botones y lógica de código — evitando que el usuario acceda manualmente a pantallas de otros roles.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -140,8 +361,9 @@ En el **Explorador de Soluciones** de Visual Studio, ubica y haz doble clic sobr
 </Shell>
 ```
 
-### ¿Cómo configurar la lógica `AppShell.xaml.cs`?
-En el mismo Explorador de Soluciones, despliega la flechita junto a `AppShell.xaml` y abre su archivo subyacente `AppShell.xaml.cs`. Reemplaza su contenido con el siguiente código para registrar las rutas explícitas:
+### ⚙️ ¿Cómo editar el archivo `AppShell.xaml.cs`?
+
+Aquí registramos adicionalmente rutas complejas como la pantalla de Roles, que no está declarada como `ShellContent` en el XAML, sino registrada manualmente para navegación por *push* (`Navigation.PushAsync`).
 
 ```csharp
 namespace CRUD_LOGIN_MAUI;
@@ -161,14 +383,37 @@ public partial class AppShell : Shell
 }
 ```
 
+> 💡 **Tip:** El nombre del rol devuelto por la consulta SQL (`Admin`, `Supervisor`, `Vendedor`) se concatena directamente con `"Page"` en `MainPage.xaml.cs` para construir la ruta de destino. Por eso es fundamental que `NombreRol` en la base de datos coincida **exactamente** con el prefijo de cada página (`AdminPage`, `SupervisorPage`, `VendedorPage`).
+>
+> ⚠️ Este paso solo compilará sin errores una vez que existan físicamente las clases `AdminPage`, `SupervisorPage`, `VendedorPage`, `MainPage` y `RolesPage` en el proyecto — créalas siguiendo los pasos siguientes antes de compilar.
+
 ---
 
 ## 🔒 PASO 3: Pantalla de Login (`MainPage`)
 
-Esta es la puerta de entrada. En esta pantalla, el usuario coloca sus datos.
+Esta es la 🚪 puerta de entrada. En esta pantalla, el usuario coloca sus credenciales para ser autenticado y redirigido según su rol.
 
-### ¿Cómo diseñar la vista `MainPage.xaml`?
-Ubica el archivo `MainPage.xaml` en el Explorador de Soluciones. Reemplaza el diseño inicial de MAUI por este código, el cual incluye los campos de usuario, contraseña, y el botón de ingresar:
+> ℹ️ `MainPage.xaml` **también viene incluido por defecto** en la plantilla de .NET MAUI, así que aquí se **edita** en vez de crearse desde cero.
+
+### 🪜 Pasos para ubicar y preparar `MainPage`
+
+1. En el **Solution Explorer**, ubica el archivo `MainPage.xaml` (raíz del proyecto, junto a `AppShell.xaml`).
+2. Haz doble clic para abrirlo en el diseñador/editor XAML.
+3. Borra todo el contenido de ejemplo (el famoso contador "Click me").
+4. Pega el XAML del bloque de abajo.
+5. Expande `MainPage.xaml` en el árbol y abre `MainPage.xaml.cs`.
+6. Borra el código de ejemplo y pega el C# correspondiente.
+7. Antes de compilar, agrega el paquete NuGet necesario para SQL Server (ver recuadro siguiente).
+
+> 📦 **Instalar el conector de SQL Server (una sola vez por proyecto):**
+> 1. Clic derecho sobre el proyecto `CRUD_LOGIN_MAUI` en el Solution Explorer → **Manage NuGet Packages...**
+> 2. Pestaña **Browse**, busca `Microsoft.Data.SqlClient`.
+> 3. Selecciónalo e instala la versión estable más reciente compatible con tu `TargetFramework`.
+> 4. Clic en **Install** y acepta los términos de licencia.
+
+### 🎨 ¿Cómo editar el archivo `MainPage.xaml` (La Vista)?
+
+Abre `MainPage.xaml` y diseña la interfaz gráfica con campos para Usuario y Contraseña, además de un botón con un ícono de 👁️ "ojito" para mostrar/ocultar la contraseña temporalmente.
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
@@ -222,10 +467,13 @@ Ubica el archivo `MainPage.xaml` en el Explorador de Soluciones. Reemplaza el di
 
     </VerticalStackLayout>
 </ContentPage>
+
+
 ```
 
-### ¿Cómo implementar la lógica de `MainPage.xaml.cs`?
-Despliega `MainPage.xaml` y abre `MainPage.xaml.cs`. Pega exactamente este código. Nota importante: asegúrate de que el paquete `Microsoft.Data.SqlClient` esté instalado vía NuGet para que las funciones de SQL no generen error.
+### 🧠 ¿Cómo editar el archivo `MainPage.xaml.cs` (La Lógica)?
+
+Este código es vital ⚡. Aquí se toma la contraseña ingresada, se envía a la base de datos para compararla (encriptándola en el proceso con `SHA2_256`) y si coinciden, se obtiene el nombre del rol para redirigir dinámicamente (`AdminPage`, `VendedorPage`, etc).
 
 ```csharp
 using Microsoft.Maui.Controls;
@@ -268,7 +516,7 @@ public partial class MainPage : ContentPage
 
         try
         {
-            string connectionString = "Server=192.168.2.55,1433;Database=LoginRolesDB_cif;User Id=JUANCITO;Password=123456;TrustServerCertificate=True;";
+            string connectionString = "Server=10.0.0.15,1433;Database=LoginRolesDB_cif;User Id=JUANCITO;Password=123456;TrustServerCertificate=True;";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -305,16 +553,33 @@ public partial class MainPage : ContentPage
         }
     }
 }
+
+
 ```
+
+> 🛡️ **Buena práctica aplicada:** la consulta usa **parámetros SQL** (`@Usuario`, `@Password`) en lugar de concatenar strings, lo que previene ataques de **inyección SQL (SQL Injection)**.
+>
+> ⚠️ **Nota sobre la cadena de conexión:** en este manual la `connectionString` está escrita directamente en el código (*hardcoded*) por fines didácticos. En un proyecto real conviene moverla a un archivo de configuración seguro (por ejemplo, `appsettings.json` + variables de entorno, o `SecureStorage` de MAUI) para no exponer credenciales. Recuerda reemplazar `10.0.0.15` por la IP real de tu servidor SQL (ver Paso 1, punto 8️⃣).
 
 ---
 
 ## 🛠️ PASO 4: Panel de Control (`AdminPage`)
 
-Pantalla exclusiva para que el Administrador registre nuevos empleados en el sistema y asigne roles.
+Pantalla exclusiva para que el 👑 Administrador registre, edite, elimine y consulte usuarios del sistema — el único rol con permisos de escritura sobre la base de datos.
 
-### ¿Cómo crear la vista `AdminPage.xaml`?
-En el **Explorador de Soluciones**, haz clic derecho sobre el proyecto (CRUD_LOGIN_MAUI) -> **Agregar** -> **Nuevo elemento...** -> En la lista selecciona **.NET MAUI** -> **Página de contenido (XAML)**. Ponle el nombre `AdminPage.xaml` y presiona Agregar. Pega el siguiente código en el archivo creado:
+### 🪜 Pasos para crear `AdminPage.xaml` y `AdminPage.xaml.cs`
+
+1. En el **Solution Explorer**, clic derecho sobre el nombre del proyecto `CRUD_LOGIN_MAUI` → **Add** → **New Item...**
+2. En el buscador de plantillas, escribe `ContentPage` y selecciona **.NET MAUI ContentPage (XAML)**.
+3. En el campo **Name**, escribe exactamente `AdminPage.xaml`.
+4. Clic en **Add**. Visual Studio generará automáticamente `AdminPage.xaml` y su code-behind `AdminPage.xaml.cs`.
+5. Abre `AdminPage.xaml`, borra el contenido por defecto y pega el XAML de abajo.
+6. Abre `AdminPage.xaml.cs`, borra el contenido por defecto y pega el C# correspondiente.
+7. Verifica que el `x:Class` en el XAML (`CRUD_LOGIN_MAUI.AdminPage`) coincida con el `namespace` + nombre de clase del `.cs`.
+
+### 🎨 Vista (`AdminPage.xaml`)
+
+Se usa para la gestión completa (CRUD) de los usuarios, e incluye un buscador en tiempo real y una lista (`CollectionView`) con *compiled bindings*.
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
@@ -399,10 +664,14 @@ En el **Explorador de Soluciones**, haz clic derecho sobre el proyecto (CRUD_LOG
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
+
+
+
 ```
 
-### ¿Cómo programar la lógica `AdminPage.xaml.cs`?
-Abre el archivo `AdminPage.xaml.cs` anidado y pega todo este código. Contiene las sentencias SQL centralizadas para evitar repetir código en cada botón del CRUD.
+### 🧩 Lógica de Ejecución Centralizada (`AdminPage.xaml.cs`)
+
+Aquí usamos un método mágico ✨ central `EjecutarAccion` que nos ahorra repetir código: recibe la consulta SQL y el nombre de la acción (para el mensaje de confirmación), y encapsula la apertura de conexión, ejecución y recarga de la lista.
 
 ```csharp
 using Microsoft.Data.SqlClient;
@@ -419,9 +688,10 @@ public class UsuarioItem
 
 public partial class AdminPage : ContentPage
 {
-    private string connectionString = "Server=192.168.2.55,1433;Database=LoginRolesDB_cif;User Id=JUANCITO;Password=123456;TrustServerCertificate=True;";
+    private string connectionString = "Server=10.0.0.15,1433;Database=LoginRolesDB_cif;User Id=JUANCITO;Password=123456;TrustServerCertificate=True;";
     private bool isProcessing = false;
     private int idSeleccionado = 0;
+    private List<int> _rolesIds = new List<int>();
 
     public AdminPage()
     {
@@ -445,9 +715,13 @@ public partial class AdminPage : ContentPage
             using var cmd = new SqlCommand(query, conn);
             using var reader = await cmd.ExecuteReaderAsync();
 
+            _rolesIds.Clear();
             var roles = new List<string>();
             while (await reader.ReadAsync())
+            {
+                _rolesIds.Add((int)reader["Id"]);
                 roles.Add(reader["NombreRol"].ToString());
+            }
 
             pickerRol.ItemsSource = roles;
         }
@@ -479,6 +753,12 @@ public partial class AdminPage : ContentPage
         bool confirmar = await DisplayAlert("Confirmación", $"¿Seguro que desea {accion} este usuario?", "Sí", "No");
         if (!confirmar) return;
 
+        if (pickerRol.SelectedIndex < 0)
+        {
+            await DisplayAlert("Error", "Debe seleccionar un rol.", "OK");
+            return;
+        }
+
         isProcessing = true;
         try
         {
@@ -489,7 +769,7 @@ public partial class AdminPage : ContentPage
             cmd.Parameters.AddWithValue("@Usuario", txtUsuario.Text ?? "");
             cmd.Parameters.AddWithValue("@Password", txtPassword.Text ?? "");
 
-            cmd.Parameters.AddWithValue("@IdRol", pickerRol.SelectedIndex + 1);
+            cmd.Parameters.AddWithValue("@IdRol", _rolesIds[pickerRol.SelectedIndex]);
             cmd.Parameters.AddWithValue("@Id", idSeleccionado);
 
             await cmd.ExecuteNonQueryAsync();
@@ -589,15 +869,32 @@ public partial class AdminPage : ContentPage
         listaUsuarios.ItemsSource = null;
     }
 }
+
+
+
 ```
+
+> 📝 **Detalle importante:** al actualizar un usuario, el campo de contraseña **siempre** se vuelve a encriptar con `HASHBYTES`, incluso si el usuario deja el campo vacío en pantalla — por eso, en un escenario real, conviene validar que `txtPassword` no esté vacío antes de sobrescribir el hash existente, o el usuario perdería su contraseña anterior.
+>
+> 🧭 **Navegación mixta:** nota que esta pantalla usa dos mecanismos distintos: `Shell.Current.GoToAsync` (rutas registradas en el Shell) para el logout, y `Navigation.PushAsync` (pila de navegación clásica) para ir a `RolesPage`.
 
 ---
 
-## 🔒 PASO 5: Vistas (ROLES)
-Esta vista complementa al Administrador permitiendo gestionar la tabla `Roles`. 
+## 🎭 PASO 5: Vistas (ROLES)
 
-### ¿Cómo crear la vista `RolesPage.xaml`?
-Nuevamente, clic derecho en el proyecto -> **Agregar** -> **Nuevo elemento...** -> **Página de contenido (XAML)**. Nómbralo `RolesPage.xaml` y presiona Agregar. Pega este contenido:
+A diferencia del Administrador, estas vistas carecen de botones para modificar la base de datos... *excepto* `RolesPage`, que sí permite gestionar el catálogo de roles (es una extensión administrativa, accesible únicamente desde `AdminPage`).
+
+### 🪜 Pasos para crear `RolesPage.xaml` y `RolesPage.xaml.cs`
+
+1. Clic derecho sobre el proyecto `CRUD_LOGIN_MAUI` en el Solution Explorer → **Add** → **New Item...**
+2. Busca la plantilla **.NET MAUI ContentPage (XAML)**.
+3. En **Name**, escribe `RolesPage.xaml` → **Add**.
+4. Visual Studio crea `RolesPage.xaml` junto con `RolesPage.xaml.cs`.
+5. Abre `RolesPage.xaml`, borra el contenido por defecto y pega el XAML de abajo.
+6. Abre `RolesPage.xaml.cs`, borra el contenido por defecto y pega el C# correspondiente.
+7. Recuerda que esta página se abre mediante `Navigation.PushAsync(new RolesPage())` desde `AdminPage`, no mediante una ruta del Shell — no necesita `ShellContent` en `AppShell.xaml`, solo el `Routing.RegisterRoute` ya agregado en el Paso 2.
+
+### 📄 `RolesPage.xaml` (Gestión del Catálogo de Roles)
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
@@ -658,10 +955,10 @@ Nuevamente, clic derecho en el proyecto -> **Agregar** -> **Nuevo elemento...** 
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
+
 ```
 
-### ¿Cómo programar la lógica `RolesPage.xaml.cs`?
-Abre su archivo `.cs` interno y pega exactamente esta lógica para administrar roles en la base de datos:
+### ⚙️ `RolesPage.xaml.cs` (Lógica del Catálogo de Roles)
 
 ```csharp
 using Microsoft.Data.SqlClient;
@@ -677,7 +974,7 @@ public class RolItem
 
 public partial class RolesPage : ContentPage
 {
-    private string connectionString = "Server=192.168.2.55,1433;Database=LoginRolesDB_cif;User Id=JUANCITO;Password=123456;TrustServerCertificate=True;";
+    private string connectionString = "Server=10.0.0.15,1433;Database=LoginRolesDB_cif;User Id=JUANCITO;Password=123456;TrustServerCertificate=True;";
     private bool isProcessing = false;
     private int idSeleccionado = 0;
 
@@ -776,15 +1073,28 @@ public partial class RolesPage : ContentPage
         listaRoles.ItemsSource = null;
     }
 }
+
 ```
+
+> ⚠️ **Cuidado con la integridad referencial:** al eliminar un rol que todavía tiene usuarios asociados (`Usuarios.IdRol`), SQL Server rechazará la operación por la restricción `FOREIGN KEY`. Esto es intencional: protege la base de datos de quedar con usuarios "huérfanos" sin rol válido.
 
 ---
 
-## 🔒 PASO 6: Vistas Limitadas (Supervisor)
-A diferencia del Administrador, esta vista carece de botones para modificar la base de datos, cumpliendo su propósito de perfil restringido.
+## 👔 PASO 6: Vistas Limitadas (Supervisor)
 
-### ¿Cómo crear la vista `SupervisorPage.xaml`?
-Haz clic derecho en el proyecto -> **Agregar** -> **Nuevo elemento...** -> **Página de contenido (XAML)**. Nómbralo `SupervisorPage.xaml`. Pega lo siguiente:
+A diferencia del Administrador, estas vistas carecen de botones para modificar la base de datos, cumpliendo su propósito de **perfiles de solo lectura / operación restringida**.
+
+### 🪜 Pasos para crear `SupervisorPage.xaml` y `SupervisorPage.xaml.cs`
+
+1. Clic derecho sobre el proyecto `CRUD_LOGIN_MAUI` → **Add** → **New Item...**
+2. Selecciona la plantilla **.NET MAUI ContentPage (XAML)**.
+3. En **Name**, escribe `SupervisorPage.xaml` → **Add**.
+4. Se generan `SupervisorPage.xaml` y `SupervisorPage.xaml.cs`.
+5. Abre `SupervisorPage.xaml`, borra el contenido de ejemplo y pega el XAML de abajo.
+6. Abre `SupervisorPage.xaml.cs`, borra el contenido de ejemplo y pega el C# correspondiente.
+7. Verifica que ya exista la ruta `Routing.RegisterRoute("SupervisorPage", typeof(SupervisorPage));` en `AppShell.xaml.cs` (Paso 2) y el `ShellContent` correspondiente para que `Shell.Current.GoToAsync("SupervisorPage")` funcione tras el login.
+
+### 📄 `SupervisorPage.xaml` (Pantalla Restringida)
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
@@ -819,10 +1129,10 @@ Haz clic derecho en el proyecto -> **Agregar** -> **Nuevo elemento...** -> **Pá
                 Margin="0,20,0,0" />
     </VerticalStackLayout>
 </ContentPage>
+
 ```
 
-### ¿Cómo programar la lógica `SupervisorPage.xaml.cs`?
-Abre el código detrás de `SupervisorPage.xaml` y pega este código (solo contiene la acción para hacer Logout):
+### ⚙️ `SupervisorPage.xaml.cs` (Lógica Restringida)
 
 ```csharp
 namespace CRUD_LOGIN_MAUI;
@@ -839,15 +1149,29 @@ public partial class SupervisorPage : ContentPage
         await Shell.Current.GoToAsync("//MainPage");
     }
 }
+
 ```
+
+> 💡 **Idea de extensión:** este espacio ("Ventana: Reportes y supervisión") es el punto ideal para incorporar, por ejemplo, gráficos de ventas por vendedor, alertas de inventario o reportes en PDF — sin otorgar permisos de edición sobre `Usuarios` o `Roles`.
 
 ---
 
-## 🔒 PASO 7: Vistas Limitadas (Vendedor)
-Igual que el supervisor, es una interfaz simple de destino para cuando se loguea un empleado de nivel vendedor.
+## 🛍️ PASO 7: Vistas Limitadas (Vendedor)
 
-### ¿Cómo crear la vista `VendedorPage.xaml`?
-Haz clic derecho en el proyecto -> **Agregar** -> **Nuevo elemento...** -> **Página de contenido (XAML)**. Nómbralo `VendedorPage.xaml`. Pega el siguiente diseño visual:
+A diferencia del Administrador, estas vistas carecen de botones para modificar la base de datos, cumpliendo su propósito de **perfil operativo enfocado en ventas**.
+
+### 🪜 Pasos para crear `VendedorPage.xaml` y `VendedorPage.xaml.cs`
+
+1. Clic derecho sobre el proyecto `CRUD_LOGIN_MAUI` → **Add** → **New Item...**
+2. Selecciona la plantilla **.NET MAUI ContentPage (XAML)**.
+3. En **Name**, escribe `VendedorPage.xaml` → **Add**.
+4. Se generan `VendedorPage.xaml` y `VendedorPage.xaml.cs`.
+5. Abre `VendedorPage.xaml`, borra el contenido de ejemplo y pega el XAML de abajo.
+6. Abre `VendedorPage.xaml.cs`, borra el contenido de ejemplo y pega el C# correspondiente.
+7. Confirma que `Routing.RegisterRoute("VendedorPage", typeof(VendedorPage));` y su `ShellContent` (Paso 2) ya estén presentes para permitir la redirección `Shell.Current.GoToAsync("VendedorPage")` desde el login.
+8. Con esto, las 5 páginas (`MainPage`, `AdminPage`, `RolesPage`, `SupervisorPage`, `VendedorPage`) y el `AppShell` quedan completos — compila el proyecto (`Ctrl+Shift+B`) para verificar que no haya errores antes de ejecutar.
+
+### 📄 `VendedorPage.xaml` (Pantalla Restringida)
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
@@ -882,10 +1206,10 @@ Haz clic derecho en el proyecto -> **Agregar** -> **Nuevo elemento...** -> **Pá
                 Margin="0,20,0,0" />
     </VerticalStackLayout>
 </ContentPage>
+
 ```
 
-### ¿Cómo programar la lógica `VendedorPage.xaml.cs`?
-Abre el archivo `.cs` detrás de la vista y pega lo siguiente para completar la página del vendedor:
+### ⚙️ `VendedorPage.xaml.cs` (Lógica Restringida)
 
 ```csharp
 namespace CRUD_LOGIN_MAUI;
@@ -902,17 +1226,32 @@ public partial class VendedorPage : ContentPage
         await Shell.Current.GoToAsync("//MainPage");
     }
 }
+
 ```
+
+> 💡 **Idea de extensión:** el "Módulo de ventas" es el lugar natural para añadir un formulario de registro de pedidos o consulta de catálogo de productos, siempre manteniendo al Vendedor sin acceso a la gestión de usuarios o roles.
 
 ---
 
-## 🏁 CONCLUSIÓN
+## 🧱 Buenas Prácticas y Consideraciones Adicionales
 
-La arquitectura implementada en este proyecto **CRUD_LOGIN_MAUI** representa una solución robusta, escalable y segura para la administración de credenciales de usuario en un entorno corporativo. 
+| Área | Recomendación |
+|---|---|
+| 🔐 Seguridad | Evitar cadenas de conexión *hardcodeadas*; usar `SecureStorage`, variables de entorno o un backend intermediario. |
+| 🧂 Hashing | Agregar *salt* único por usuario antes de aplicar `HASHBYTES` para mayor resistencia ante ataques de diccionario. |
+| 🌐 Producción | Reemplazar la conexión directa a SQL Server desde el cliente MAUI por una **API REST intermedia**, evitando exponer el servidor de base de datos directamente al dispositivo. |
+| ♻️ Mantenibilidad | Extraer la lógica de acceso a datos (ADO.NET) a una capa de servicios/repositorios independiente de las páginas XAML (patrón MVVM). |
+| 🧪 Validaciones | Añadir validaciones de formato (longitud mínima de contraseña, caracteres permitidos) antes de insertar/actualizar usuarios. |
+| 🔌 Conectividad | Verificar siempre que el firewall, el protocolo TCP/IP y el puerto 1433 estén habilitados si la app y el servidor SQL están en máquinas distintas. |
 
-Al separar rígidamente la lógica de enrutamiento (`AppShell`) del diseño (`XAML`) y de la lógica de conexión (`C#`), hemos logrado que:
-1. **La seguridad es de grado alto:** Las contraseñas nunca viajan en texto plano, gracias a la función `HASHBYTES('SHA2_256')` implementada desde el motor de base de datos SQL Server.
-2. **Navegación Intocable:** La desactivación del _Flyout_ y el redireccionamiento estricto a las raíces garantizan que los usuarios de bajo nivel (Vendedores) no puedan forzar la visualización de paneles administrativos pulsando "Atrás".
-3. **Escalabilidad:** El sistema está preparado para recibir una cantidad ilimitada de roles dinámicos que se comunican perfectamente mediante los menús desplegables (`Picker`) conectados en vivo.
+---
 
-¡Con este código base estás listo para evolucionar este proyecto MAUI hacia un ERP o Punto de Venta completo!
+## ✅ Conclusión
+
+¡Eso es todo! 🎉 Siguiendo esta arquitectura modular y limpia, tu aplicación es **escalable, segura y cada rol tiene estrictamente acceso solo a lo que le corresponde**:
+
+- 👑 **Admin** → control total (usuarios y roles).
+- 👔 **Supervisor** → vista de reportes y supervisión (solo lectura).
+- 🛍️ **Vendedor** → módulo operativo de ventas (solo lectura).
+
+> 🚀 A partir de esta base, el proyecto puede crecer hacia una arquitectura **MVVM completa**, integración con una **API REST**, y funcionalidades adicionales por rol sin comprometer la separación de responsabilidades.

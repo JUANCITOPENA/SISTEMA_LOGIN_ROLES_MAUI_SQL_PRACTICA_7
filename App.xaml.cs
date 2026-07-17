@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CRUD_LOGIN_MAUI;
 
@@ -9,7 +9,7 @@ public partial class App : Application
 		InitializeComponent();
 	}
 
-	protected override Window CreateWindow(IActivationState? activationState)
+	protected override Window CreateWindow(IActivationState activationState)
 	{
 		return new Window(new AppShell());
 	}

@@ -38,7 +38,7 @@ public partial class MainPage : ContentPage
 
         try
         {
-            string connectionString = "Server=192.168.2.55,1433;Database=LoginRolesDB_cif;User Id=JUANCITO;Password=123456;TrustServerCertificate=True;";
+            string connectionString = "Server=10.0.0.15,1433;Database=LoginRolesDB_cif;User Id=JUANCITO;Password=123456;TrustServerCertificate=True;";
 
             using (var connection = new SqlConnection(connectionString))
             {

@@ -23,10 +23,10 @@
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net10.0-android",
-          "net10.0-ios",
-          "net10.0-maccatalyst",
-          "net10.0-windows10.0.19041.0"
+          "net9.0-android",
+          "net9.0-ios",
+          "net9.0-maccatalyst",
+          "net9.0-windows10.0.19041.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
@@ -34,20 +34,20 @@
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net10.0-android36.0": {
-            "targetAlias": "net10.0-android",
+          "net9.0-android35.0": {
+            "targetAlias": "net9.0-android",
             "projectReferences": {}
           },
-          "net10.0-ios26.1": {
-            "targetAlias": "net10.0-ios",
+          "net9.0-ios26.0": {
+            "targetAlias": "net9.0-ios",
             "projectReferences": {}
           },
-          "net10.0-maccatalyst26.1": {
-            "targetAlias": "net10.0-maccatalyst",
+          "net9.0-maccatalyst26.0": {
+            "targetAlias": "net9.0-maccatalyst",
             "projectReferences": {}
           },
-          "net10.0-windows10.0.19041": {
-            "targetAlias": "net10.0-windows10.0.19041.0",
+          "net9.0-windows10.0.19041": {
+            "targetAlias": "net9.0-windows10.0.19041.0",
             "projectReferences": {}
           }
         },
@@ -59,13 +59,13 @@
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
-          "auditMode": "all"
+          "auditMode": "direct"
         },
         "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
-        "net10.0-android36.0": {
-          "targetAlias": "net10.0-android",
+        "net9.0-android35.0": {
+          "targetAlias": "net9.0-android",
           "dependencies": {
             "Microsoft.Data.SqlClient": {
               "target": "Package",
@@ -73,16 +73,16 @@
             },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[9.0.0, )"
             },
             "Microsoft.Maui.Controls": {
               "target": "Package",
-              "version": "[10.0.1, )"
+              "version": "[9.0.120, )"
             },
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.1, )",
+              "version": "[9.0.11, )",
               "autoReferenced": true
             }
           },
@@ -101,17 +101,14 @@
             "Microsoft.Android": {
               "privateAssets": "all"
             },
-            "Microsoft.Android.Runtimes": {
-              "privateAssets": "all"
-            },
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json"
         },
-        "net10.0-ios26.1": {
-          "targetAlias": "net10.0-ios",
+        "net9.0-ios26.0": {
+          "targetAlias": "net9.0-ios",
           "dependencies": {
             "Microsoft.Data.SqlClient": {
               "target": "Package",
@@ -119,16 +116,16 @@
             },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[9.0.0, )"
             },
             "Microsoft.Maui.Controls": {
               "target": "Package",
-              "version": "[10.0.1, )"
+              "version": "[9.0.120, )"
             },
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.1, )",
+              "version": "[9.0.11, )",
               "autoReferenced": true
             }
           },
@@ -143,11 +140,18 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.iOS.Ref.net9.0_26.0",
+              "version": "[26.0.9777, 26.0.9777]"
+            },
+            {
+              "name": "Microsoft.iOS.Runtime.iossimulator-x64.net9.0_26.0",
+              "version": "[26.0.9777, 26.0.9777]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.iOS": {
-              "privateAssets": "all"
-            },
-            "Microsoft.iOS.Runtimes": {
               "privateAssets": "all"
             },
             "Microsoft.NETCore.App": {
@@ -156,8 +160,8 @@
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json"
         },
-        "net10.0-maccatalyst26.1": {
-          "targetAlias": "net10.0-maccatalyst",
+        "net9.0-maccatalyst26.0": {
+          "targetAlias": "net9.0-maccatalyst",
           "dependencies": {
             "Microsoft.Data.SqlClient": {
               "target": "Package",
@@ -165,16 +169,16 @@
             },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[9.0.0, )"
             },
             "Microsoft.Maui.Controls": {
               "target": "Package",
-              "version": "[10.0.1, )"
+              "version": "[9.0.120, )"
             },
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.1, )",
+              "version": "[9.0.11, )",
               "autoReferenced": true
             }
           },
@@ -190,11 +194,18 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.MacCatalyst.Ref.net9.0_26.0",
+              "version": "[26.0.9777, 26.0.9777]"
+            },
+            {
+              "name": "Microsoft.MacCatalyst.Runtime.maccatalyst-x64.net9.0_26.0",
+              "version": "[26.0.9777, 26.0.9777]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.MacCatalyst": {
-              "privateAssets": "all"
-            },
-            "Microsoft.MacCatalyst.Runtimes": {
               "privateAssets": "all"
             },
             "Microsoft.NETCore.App": {
@@ -203,8 +214,8 @@
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json"
         },
-        "net10.0-windows10.0.19041": {
-          "targetAlias": "net10.0-windows10.0.19041.0",
+        "net9.0-windows10.0.19041": {
+          "targetAlias": "net9.0-windows10.0.19041.0",
           "dependencies": {
             "Microsoft.Data.SqlClient": {
               "target": "Package",
@@ -212,11 +223,11 @@
             },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[9.0.0, )"
             },
             "Microsoft.Maui.Controls": {
               "target": "Package",
-              "version": "[10.0.1, )"
+              "version": "[9.0.120, )"
             }
           },
           "imports": [
@@ -244,7 +255,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101\\RuntimeIdentifierGraph.json"
         }
       },
       "runtimes": {
@@ -260,7 +271,7 @@
         "maccatalyst-x64": {
           "#import": []
         },
-        "win-x64": {
+        "win10-x64": {
           "#import": []
         }
       }

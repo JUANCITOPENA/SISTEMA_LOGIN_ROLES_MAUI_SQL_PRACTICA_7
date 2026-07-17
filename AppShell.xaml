@@ -16,5 +16,6 @@
     <ShellContent Route="AdminPage" ContentTemplate="{DataTemplate local:AdminPage}" FlyoutItem.IsVisible="False"/>
     <ShellContent Route="SupervisorPage" ContentTemplate="{DataTemplate local:SupervisorPage}" FlyoutItem.IsVisible="False"/>
     <ShellContent Route="VendedorPage" ContentTemplate="{DataTemplate local:VendedorPage}" FlyoutItem.IsVisible="False"/>
-    
+    <ShellContent Route="RolesPage" ContentTemplate="{DataTemplate local:RolesPage}" FlyoutItem.IsVisible="False"/>
+
 </Shell>

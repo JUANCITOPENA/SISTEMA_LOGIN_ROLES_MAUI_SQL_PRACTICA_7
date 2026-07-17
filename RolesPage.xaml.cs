@@ -11,7 +11,7 @@ public class RolItem
 
 public partial class RolesPage : ContentPage
 {
-    private string connectionString = "Server=192.168.2.55,1433;Database=LoginRolesDB_cif;User Id=JUANCITO;Password=123456;TrustServerCertificate=True;";
+    private string connectionString = "Server=10.0.0.15,1433;Database=LoginRolesDB_cif;User Id=JUANCITO;Password=123456;TrustServerCertificate=True;";
     private bool isProcessing = false;
     private int idSeleccionado = 0;
 

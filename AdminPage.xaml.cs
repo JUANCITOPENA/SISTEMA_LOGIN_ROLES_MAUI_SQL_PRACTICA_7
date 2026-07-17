@@ -12,9 +12,10 @@ public class UsuarioItem
 
 public partial class AdminPage : ContentPage
 {
-    private string connectionString = "Server=192.168.2.55,1433;Database=LoginRolesDB_cif;User Id=JUANCITO;Password=123456;TrustServerCertificate=True;";
+    private string connectionString = "Server=10.0.0.15,1433;Database=LoginRolesDB_cif;User Id=JUANCITO;Password=123456;TrustServerCertificate=True;";
     private bool isProcessing = false;
     private int idSeleccionado = 0;
+    private List<int> _rolesIds = new List<int>();
 
     public AdminPage()
     {
@@ -38,9 +39,13 @@ public partial class AdminPage : ContentPage
             using var cmd = new SqlCommand(query, conn);
             using var reader = await cmd.ExecuteReaderAsync();
 
+            _rolesIds.Clear();
             var roles = new List<string>();
             while (await reader.ReadAsync())
+            {
+                _rolesIds.Add((int)reader["Id"]);
                 roles.Add(reader["NombreRol"].ToString());
+            }
 
             pickerRol.ItemsSource = roles;
         }
@@ -72,6 +77,12 @@ public partial class AdminPage : ContentPage
         bool confirmar = await DisplayAlert("Confirmación", $"¿Seguro que desea {accion} este usuario?", "Sí", "No");
         if (!confirmar) return;
 
+        if (pickerRol.SelectedIndex < 0)
+        {
+            await DisplayAlert("Error", "Debe seleccionar un rol.", "OK");
+            return;
+        }
+
         isProcessing = true;
         try
         {
@@ -82,7 +93,7 @@ public partial class AdminPage : ContentPage
             cmd.Parameters.AddWithValue("@Usuario", txtUsuario.Text ?? "");
             cmd.Parameters.AddWithValue("@Password", txtPassword.Text ?? "");
 
-            cmd.Parameters.AddWithValue("@IdRol", pickerRol.SelectedIndex + 1);
+            cmd.Parameters.AddWithValue("@IdRol", _rolesIds[pickerRol.SelectedIndex]);
             cmd.Parameters.AddWithValue("@Id", idSeleccionado);
 
             await cmd.ExecuteNonQueryAsync();

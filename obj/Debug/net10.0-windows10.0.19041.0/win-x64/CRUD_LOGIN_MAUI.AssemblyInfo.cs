@@ -11,14 +11,10 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.PackageName", "com.companyname.crud_login_maui")]
-[assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.PublisherName", "User Name")]
-[assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.Name", "CRUD_LOGIN_MAUI")]
-[assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.Version", "1.0.0.1")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("CRUD_LOGIN_MAUI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+87a91dc500b0e36dc01d1590c123c822e15bcd8f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5f80b60d27148678bb8500e261ec6ed79c217e2e")]
 [assembly: System.Reflection.AssemblyProductAttribute("CRUD_LOGIN_MAUI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CRUD_LOGIN_MAUI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
